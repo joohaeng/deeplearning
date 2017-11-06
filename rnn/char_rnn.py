@@ -86,11 +86,14 @@ vocab = (
         " $%'()+,-./0123456789:;=?ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "\\^_abcdefghijklmnopqrstuvwxyz{|}")
 seq = tf.placeholder(tf.int32, [None, None])
-loss, sample, in_state, out_state = create_model(seq, vocab)
-optimizer = tf.train.AdamOptimizer(LEARNING_RATE).minimize(loss)
+
+with tf.device('/gpu:0'):
+	loss, sample, in_state, out_state = create_model(seq, vocab)
+	optimizer = tf.train.AdamOptimizer(LEARNING_RATE).minimize(loss)
 
 start = time.time()
-with tf.Session() as sess:
+config = tf.ConfigProto(allow_soft_placement = True)
+with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
   
     iteration = 0
