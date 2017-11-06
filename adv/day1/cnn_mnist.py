@@ -7,17 +7,18 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Read in MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("~/data/mnist", one_hot=True)
 
+LOGDIR='mnist_result/1'
+
 # Parameters
 learning_rate = 0.001
-training_iters = 200000
+training_iters = 5000
 batch_size = 128
-display_step = 10
+display_step = 1
 
 # Network Parameters
 n_input = 784 # input image shape = 28*28 grey scale
@@ -55,11 +56,11 @@ def conv_net(x, weights, biases, dropout):
     print("Conv 1 = ", conv1)
 
     # Convolution Layer
-    conv2 = ?
+    conv2 = conv2d(conv1, weights['wc2'], biases['bc2'])
     print("Conv 2 = ", conv2)
 
     # Max Pooling (down-sampling) size=2, stride=2
-    conv2 = ?
+    conv2 = maxpool2d(conv2, size=2, stride=2)
     print("Conv 2 = ", conv2)
 
     # Fully connected layer
@@ -79,9 +80,9 @@ weights = {
     # 5x5 conv, 1 input, 32 outputs
     'wc1': tf.Variable(tf.random_normal([5, 5, 1, 32])),
     # 5x5 conv, 32 inputs, 64 outputs
-    'wc2': tf.Variable(tf.random_normal([?, ?, ?, 64])),
+    'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64])),
     # fully connected, 7*7*64 inputs, 1024 outputs
-    'wd1': tf.Variable(tf.random_normal([, 1024])),
+    'wd1': tf.Variable(tf.random_normal([7*7*64, 1024])),
     # 1024 inputs, 10 outputs (class prediction)
     'out': tf.Variable(tf.random_normal([1024, n_classes]))
 }
@@ -107,6 +108,10 @@ accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 # Launch the graph
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
+
+    writer = tf.summary.FileWriter(LOGDIR)
+    writer.add_graph(sess.graph)
+
     step = 1
     # Keep training until reach max iterations
     while step * batch_size < training_iters:
@@ -130,26 +135,5 @@ with tf.Session() as sess:
     print("Testing Accuracy:", \
         sess.run(accuracy, feed_dict={x: mnist.test.images[:256],
                                       y: mnist.test.labels[:256], keep_prob: 1.}))
-    """
 
-    correct_pred = tf.equal(tf.argmax(pred, axis=1), tf.argmax(y, axis=1))
-    accuracy = tf.reduce_sum(tf.cast(correct_pred, tf.float32))
-    
-    n_batches = int(mnist.test.num_examples/batch_size)
-    total_correct_pred = 0
-    
-    for i in range(n_batches):
-        X_batch, Y_batch = mnist.test.next_batch(batch_size)
-        accuracy_batch = sess.run(accuracy, feed_dict={x: X_batch, y:Y_batch, keep_prob: 1.}) 
-        total_correct_pred += accuracy_batch   
-    
-    print('Accuracy {0}'.format(total_correct_pred/mnist.test.num_examples))
-    """
-
-    filters = sess.run(weights['wc1'])
-    f, a = plt.subplots(4, 8, figsize=(10, 10))
-    for i in range(32):
-        a[int(i/8)][i%8].imshow(np.reshape(filters[:,:,:,i], (5, 5)), cmap="gray")
-    f.show()
-    plt.draw() 
-    plt.waitforbuttonpress()
+    writer.close()
