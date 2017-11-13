@@ -133,10 +133,10 @@ with tf.Session() as sess:
             print("Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
                   "{:.6f}".format(l) + ", Training Accuracy= " + \
                   "{:.5f}".format(acc))
-            savepath = saver.save(sess, SAVEDIR)
 
         step += 1
     print("Optimization Finished!")
+    savepath = saver.save(sess, SAVEDIR)
 
     # Calculate accuracy for 256 mnist test images
     

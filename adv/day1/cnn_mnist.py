@@ -16,9 +16,9 @@ LOGDIR='mnist_result/1'
 
 # Parameters
 learning_rate = 0.001
-training_iters = 20000
+training_iters = 100000
 batch_size = 128
-display_step = 1
+display_step = 100
 
 # Network Parameters
 n_input = 784 # input image shape = 28*28 grey scale
