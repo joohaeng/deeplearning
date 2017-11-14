@@ -16,12 +16,20 @@ _IMG_SIZE = 32
 _NUM_CHANNELS = 3
 _BATCH_SIZE = 128
 _CLASS_SIZE = 10
-_ITERATION = 1 #20000
+_ITERATION = 100 #20000
 _SAVE_PATH = "./tensorboard/cifar-10/"
 
+varlist1 = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="fully_connected1")
+varlist2 = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="fully_connected2")
+varlist3 = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="output")
+print("varlist1 = ", varlist1, "\n")
+print("varlist2 = ", varlist2, "\n")
+print("varlist3 = ", varlist3, "\n")
 
-loss = ?
-optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-4).minimize(loss, global_step=global_step)
+
+
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=y))
+optimizer = tf.train.AdagradOptimizer(learning_rate=1e-4).minimize(loss, global_step=global_step, var_list=[varlist1, varlist2, varlist3])
 
 
 correct_prediction = tf.equal(y_pred_cls, tf.argmax(y, dimension=1))
@@ -110,4 +118,5 @@ if _ITERATION != 0:
     train(_ITERATION)
 
 
+train_writer.close()
 sess.close()

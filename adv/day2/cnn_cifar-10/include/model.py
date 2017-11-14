@@ -6,7 +6,7 @@ def model():
     _IMAGE_SIZE = 32
     _IMAGE_CHANNELS = 3
     _NUM_CLASSES = 10
-    _RESHAPE_SIZE = ?
+    #_RESHAPE_SIZE = ?
 
     with tf.name_scope('data'):
         x = tf.placeholder(tf.float32, shape=[None, _IMAGE_SIZE * _IMAGE_SIZE * _IMAGE_CHANNELS], name='Input')
@@ -71,9 +71,9 @@ def model():
 
     # 64 5x5 filters (kernels)
     with tf.variable_scope('conv1') as scope:
-        kernel = tf.get_variable('weights', shape=[5, 5, ?, ?], initializer=tf.truncated_normal_initializer(stddev=5e-2))
+        kernel = tf.get_variable('weights', shape=[5, 5, 3, 64], initializer=tf.truncated_normal_initializer(stddev=5e-2))
         conv = tf.nn.conv2d(x_image, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.get_variable('biases', [?], initializer=tf.constant_initializer(0.1))
+        biases = tf.get_variable('biases', [64], initializer=tf.constant_initializer(0.1))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(pre_activation, name=scope.name)
 
@@ -84,51 +84,51 @@ def model():
     tf.summary.scalar('Convolution_layers/conv1', tf.nn.zero_fraction(conv1))
 
     norm1 = tf.nn.lrn(conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
-    pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1')
+    # 32x32x64
+    pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1') 
 
     # 64 5x5 filters, output : conv2
     with tf.variable_scope('conv2') as scope:
-
-
-
-
-
+        kernel = tf.get_variable('weights', shape=[5, 5, 64, 64], initializer=tf.truncated_normal_initializer(stddev=5e-2))
+        conv = tf.nn.conv2d(pool1, kernel, [1, 1, 1, 1], padding='SAME')
+        biases = tf.get_variable('biases', [64], initializer=tf.constant_initializer(0.1))
+        pre_activation = tf.nn.bias_add(conv, biases)
+        conv2 = tf.nn.relu(pre_activation, name=scope.name)
 
     norm2 = tf.nn.lrn(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
     pool2 = tf.nn.max_pool(norm2, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool2')
 
     # 128 3x3 filters, output : conv3
     with tf.variable_scope('conv3') as scope:
-
-
-
-
-
-
+        kernel = tf.get_variable('weights', shape=[3, 3, 64, 128], initializer=tf.truncated_normal_initializer(stddev=5e-2))
+        conv = tf.nn.conv2d(pool2, kernel, [1, 1, 1, 1], padding='SAME')
+        biases = tf.get_variable('biases', [128], initializer=tf.constant_initializer(0.1))
+        pre_activation = tf.nn.bias_add(conv, biases)
+        conv3 = tf.nn.relu(pre_activation, name=scope.name)
 
     # 128 3x3 filters, output : conv4
     with tf.variable_scope('conv4') as scope:
-
-
-
-
-
+        kernel = tf.get_variable('weights', shape=[3, 3, 128, 128], initializer=tf.truncated_normal_initializer(stddev=5e-2))
+        conv = tf.nn.conv2d(conv3, kernel, [1, 1, 1, 1], padding='SAME')
+        biases = tf.get_variable('biases', [128], initializer=tf.constant_initializer(0.1))
+        pre_activation = tf.nn.bias_add(conv, biases)
+        conv4 = tf.nn.relu(pre_activation, name=scope.name)
 
     # 128 3x3 filters, output : conv5
     with tf.variable_scope('conv5') as scope:
-
-
-
-
-
-
+        kernel = tf.get_variable('weights', shape=[3, 3, 128, 128], initializer=tf.truncated_normal_initializer(stddev=5e-2))
+        conv = tf.nn.conv2d(conv4, kernel, [1, 1, 1, 1], padding='SAME')
+        biases = tf.get_variable('biases', [128], initializer=tf.constant_initializer(0.1))
+        pre_activation = tf.nn.bias_add(conv, biases)
+        conv5 = tf.nn.relu(pre_activation, name=scope.name)
 
     norm3 = tf.nn.lrn(conv5, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm3')
     pool3 = tf.nn.max_pool(norm3, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool3')
+    # [batch, ?, ?, 128]
 
     # FC: _RESHAPE_SIZE --> 384, output = local3
     with tf.variable_scope('fully_connected1') as scope:
-        reshape = tf.reshape(pool3, [-1, _RESHAPE_SIZE])
+        reshape = tf.reshape(pool3, [-1, pool3.get_shape()[1].value*pool3.get_shape()[2].value*128 ])
         dim = reshape.get_shape()[1].value
         weights = tf.get_variable('weights', shape=[dim, 384], initializer=tf.truncated_normal_initializer(stddev=5e-2))
         biases = tf.get_variable('biases', [384], initializer=tf.constant_initializer(0.1))
@@ -138,11 +138,9 @@ def model():
 
     # FC: 384 --> 192, output = local4
     with tf.variable_scope('fully_connected2') as scope:
-
-
-
-
-
+        weights = tf.get_variable('weights', shape=[384, 192], initializer=tf.truncated_normal_initializer(stddev=5e-2))
+        biases = tf.get_variable('biases', [192], initializer=tf.constant_initializer(0.1))
+        local4 = tf.nn.relu(tf.matmul(local3, weights) + biases, name=scope.name)
 
     # FC: 192 --> _NUM_CLASSES
     with tf.variable_scope('output') as scope:
