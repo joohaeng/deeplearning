@@ -5,6 +5,7 @@
 ## ADV
 - [Day1](https://www.dropbox.com/s/65c8j0qeoh8nzpq/DL_day1.pdf?dl=0)
 - [Day2](https://www.dropbox.com/s/iunccegvhgqmxz2/DL_day2.pdf?dl=0)
+- [Day3](https://www.dropbox.com/s/nw4wzl2d6mta1ve/DL_day3.pdf?dl=0)
 
 ## DNN
 - [Day1-1](https://www.dropbox.com/s/m0sl61t2zfkvjla/DNN_day1-1.pdf?dl=0)
