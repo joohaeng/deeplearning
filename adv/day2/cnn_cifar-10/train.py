@@ -31,7 +31,6 @@ print("varlist3 = ", varlist3, "\n")
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=y))
 optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-4).minimize(loss, global_step=global_step, var_list=[varlist1, varlist2, varlist3])
 
-
 correct_prediction = tf.equal(y_pred_cls, tf.argmax(y, dimension=1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 tf.summary.scalar("Accuracy/train", accuracy)
@@ -53,6 +52,14 @@ except:
     sess.run(tf.global_variables_initializer())
 
 
+optim2 = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss, global_step=global_step, var_list=[varlist1, varlist2, varlist3])
+
+beta_initializers = [var.initializer for var in tf.global_variables() if 'beta' in var.name]
+sess.run(beta_initializers)
+adam_initializers = [var.initializer for var in tf.global_variables() if 'Adam' in var.name]
+sess.run(adam_initializers)
+
+
 def train(num_iterations):
     '''
         Train CNN
@@ -63,7 +70,8 @@ def train(num_iterations):
         batch_ys = train_y[randidx]
 
         start_time = time()
-        i_global, _ = sess.run([global_step, optimizer], feed_dict={x: batch_xs, y: batch_ys})
+        #i_global, _ = sess.run([global_step, optimizer], feed_dict={x: batch_xs, y: batch_ys})
+        i_global, _ = sess.run([global_step, optim2], feed_dict={x: batch_xs, y: batch_ys})
         duration = time() - start_time
 
         if (i_global % 10 == 0) or (i == num_iterations - 1):
