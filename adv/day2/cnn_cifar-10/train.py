@@ -29,7 +29,7 @@ print("varlist3 = ", varlist3, "\n")
 
 
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=y))
-optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss, global_step=global_step, var_list=[varlist1, varlist2, varlist3])
+optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-4).minimize(loss, global_step=global_step, var_list=[varlist1, varlist2, varlist3])
 
 
 correct_prediction = tf.equal(y_pred_cls, tf.argmax(y, dimension=1))
